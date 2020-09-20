@@ -295,6 +295,72 @@ public struct ConstraintArrayDSL {
                 if currentColumn != 0 && currentColumn != warpCount - 1 {//other col
                     make.left.equalTo(prev.snp.right).offset(fixedInteritemSpacing);
                 }
+                
+                if currentRow == 0 {
+                    make.top.equalTo(tempSuperView).offset(edgeInset.top);
+                }
+                
+                if currentColumn == 0 {
+                    make.left.equalTo(tempSuperView).offset(edgeInset.left);
+                }
+            })
+            prev = v
+        }
+    }
+    ///  distribute Sudoku with fixed item spacing (right to left)
+    public func distributeSudokuViewsReverse(fixedLineSpacing: CGFloat, fixedInteritemSpacing: CGFloat, warpCount: Int, edgeInset: ConstraintEdgeInsets = .zero) {
+        
+        guard self.array.count > 1, warpCount >= 1, let tempSuperView = commonSuperviewOfViews() else {
+            return
+        }
+        
+        let remainder = self.array.count % warpCount
+        let quotient = self.array.count / warpCount
+        
+        let rowCount = (remainder == 0) ? quotient : (quotient + 1)
+        
+        var prev: ConstraintView?
+        
+        for (i,v) in self.array.enumerated() {
+            
+            let currentRow = i / warpCount
+            let currentColumn = i % warpCount
+            
+            v.snp.makeConstraints({ (make) in
+                guard let prev = prev else {//first row & first col
+                    make.top.equalTo(tempSuperView).offset(edgeInset.top)
+                    make.right.equalTo(tempSuperView).offset(-edgeInset.right)
+                    return
+                }
+                make.width.height.equalTo(prev)
+                if currentRow == rowCount - 1 {//last row
+                    if currentRow != 0 && i - warpCount >= 0 {//just one row
+                        make.top.equalTo(self.array[i-warpCount].snp.bottom).offset(fixedLineSpacing)
+                    }
+                    make.bottom.equalTo(tempSuperView).offset(-edgeInset.bottom)
+                }
+                
+                if currentRow != 0 && currentRow != rowCount - 1 {//other row
+                    make.top.equalTo(self.array[i-warpCount].snp.bottom).offset(fixedLineSpacing);
+                }
+                if currentColumn == warpCount - 1 {//last col
+                    if currentColumn != 0 {//just one line
+                        make.right.equalTo(prev.snp.left).offset(-fixedInteritemSpacing)
+                    }
+                    make.left.equalTo(tempSuperView).offset(edgeInset.left)
+                }
+                
+                if currentColumn != 0 && currentColumn != warpCount - 1 {//other col
+                    make.right.equalTo(prev.snp.left).offset(-fixedInteritemSpacing);
+                }
+                
+                if currentRow == 0 {
+                    make.top.equalTo(tempSuperView).offset(edgeInset.top);
+                }
+                
+                if currentRow == rowCount - 1 {
+                    make.right.equalTo(tempSuperView).offset(-edgeInset.right)
+                }
             })
             prev = v
         }
